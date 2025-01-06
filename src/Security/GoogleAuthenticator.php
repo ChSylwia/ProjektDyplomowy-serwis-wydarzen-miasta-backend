@@ -88,9 +88,9 @@ class GoogleAuthenticator extends AbstractAuthenticator
                 $user->setFirstName($decodedToken['given_name'] ?? null);
                 $user->setLastName($decodedToken['family_name'] ?? null);
                 $user->setUsername($decodedToken['name'] ?? null); // Fallback to full name if username is not separate
-                $user->setCity("Sierpc"); // Google does not provide city info directly
-                $user->setPostalCode(postalCode: '09-200'); // Google does not provide postal code directly
-                $user->setUserType('google'); // Default user type for Google
+                $user->setCity(null); // Google does not provide city info directly
+                $user->setPostalCode(postalCode: null); // Google does not provide postal code directly
+                $user->setUserType('private'); // Default user type for Google
                 $user->setTermsAccepted(true);
                 $this->userRepository->save($user, flush: true);
 
