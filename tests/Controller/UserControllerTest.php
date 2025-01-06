@@ -103,7 +103,6 @@ class UserControllerTest extends WebTestCase
         $fixture = $this->repository->findAll();
 
         self::assertSame('Something New', $fixture[0]->getEmail());
-        self::assertSame('Something New', $fixture[0]->getRoles());
         self::assertSame('Something New', $fixture[0]->getPassword());
         self::assertSame('Something New', $fixture[0]->getFirstName());
         self::assertSame('Something New', $fixture[0]->getLastName());

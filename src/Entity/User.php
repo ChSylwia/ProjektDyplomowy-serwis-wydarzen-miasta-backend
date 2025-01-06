@@ -37,6 +37,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $username = null;
 
+    #[ORM\Column(length: 255)]
+    private ?string $city = null;
+
+    #[ORM\Column(length: 5)]
+    private ?string $postalCode = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $userType = null;
+
+    #[ORM\Column]
+    private ?bool $termsAccepted = null;
+
+
     public function getId(): ?int
     {
         return $this->id;
@@ -139,6 +152,54 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setUsername(?string $username): static
     {
         $this->username = $username;
+
+        return $this;
+    }
+
+    public function getCity(): ?string
+    {
+        return $this->city;
+    }
+
+    public function setCity(string $city): static
+    {
+        $this->city = $city;
+
+        return $this;
+    }
+
+    public function getPostalCode(): ?string
+    {
+        return $this->postalCode;
+    }
+
+    public function setPostalCode(string $postalCode): static
+    {
+        $this->postalCode = $postalCode;
+
+        return $this;
+    }
+
+    public function getUserType(): ?string
+    {
+        return $this->userType;
+    }
+
+    public function setUserType(string $userType): static
+    {
+        $this->userType = $userType;
+
+        return $this;
+    }
+
+    public function isTermsAccepted(): ?bool
+    {
+        return $this->termsAccepted;
+    }
+
+    public function setTermsAccepted(bool $termsAccepted): static
+    {
+        $this->termsAccepted = $termsAccepted;
 
         return $this;
     }

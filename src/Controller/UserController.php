@@ -28,7 +28,7 @@ class UserController extends AbstractController
             ],
             'create' => [
                 'query' => [],
-                'body' => ['firstName', 'lastName', 'email', 'password']
+                'body' => ['firstName', 'lastName', 'email', 'password', 'username', 'city', 'postalCode', 'userType', 'termsAccepted'],
             ],
             'get' => [
                 'query' => [],
@@ -36,7 +36,7 @@ class UserController extends AbstractController
             ],
             'edit' => [
                 'query' => [],
-                'body' => ['firstName', 'lastName']
+                'body' => ['firstName', 'lastName', 'email', 'username', 'city', 'postalCode', 'userType', 'termsAccepted'],
             ],
             'delete' => [
                 'query' => [],
@@ -50,7 +50,7 @@ class UserController extends AbstractController
             ],
             'create' => [
                 'query' => [],
-                'body' => ['firstName', 'lastName', 'email', 'password']
+                'body' => ['firstName', 'lastName', 'email', 'password', 'city', 'postalCode', 'userType', 'termsAccepted'],
             ],
             'get' => [
                 'query' => [],
@@ -151,7 +151,8 @@ class UserController extends AbstractController
         $bodyData = json_decode($request->getContent(), true);
 
         $email = $bodyData['email'] ?? null;
-        $is_email_unique = $userRepository->findUserByEmail($email) !== null;
+        print_r($email);
+        $is_email_unique = $userRepository->findUserByEmail($email) === null;
         if (!$is_email_unique) {
             return $this->jsonResponseFactory->create(
                 (object) [
@@ -170,9 +171,12 @@ class UserController extends AbstractController
         $user->setFirstName($bodyData['firstName'] ?? null);
         $user->setLastName($bodyData['lastName'] ?? null);
         $user->setEmail($email);
-        $user->setUsername($bodyData['email'] ?? null);
+        $user->setUsername($bodyData['username'] ?? null);
+        $user->setCity($bodyData['city'] ?? null);
+        $user->setPostalCode($bodyData['postalCode'] ?? null);
+        $user->setUserType($bodyData['userType'] ?? null);
+        $user->setTermsAccepted($bodyData['termsAccepted'] ?? false);
         $user->setPassword($passwordHasher->hashPassword($user, $bodyData['password'] ?? null));
-
 
 
         try {
@@ -310,13 +314,13 @@ class UserController extends AbstractController
         foreach ($bodyData as $key => $value) {
             if ($value !== null) {
                 $setter = 'set' . ucfirst($key);
-
-                if ($key === 'password') {
-                    $user->setPassword($passwordHasher->hashPassword($user, $value));
-                    continue;
+                if (method_exists($user, $setter)) {
+                    if ($key === 'password') {
+                        $user->setPassword($passwordHasher->hashPassword($user, $value));
+                    } else {
+                        $user->$setter($value);
+                    }
                 }
-
-                $user->$setter($value);
             }
         }
 
