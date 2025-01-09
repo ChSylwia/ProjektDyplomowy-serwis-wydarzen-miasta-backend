@@ -78,8 +78,13 @@ To use this starter kit, follow these steps:
 php bin/console make:entity
 php bin/console make:migration
 
-composer install
+php bin/console lexik:jwt:generate-keypair --overwrite
 php bin/console cache:clear
+composer install
+php bin/console doctrine:migrations:migrate
+symfony server:start
+
+php bin/console debug:router
 
 ---
 

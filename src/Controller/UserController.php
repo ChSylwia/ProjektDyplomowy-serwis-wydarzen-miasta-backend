@@ -14,6 +14,7 @@ use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 #[Route('/api/v1/user')]
 class UserController extends AbstractController
 {
@@ -122,6 +123,34 @@ class UserController extends AbstractController
             );
         }
     }
+
+    #[Route('/current', name: 'app_user_current', methods: ['GET'])]
+    public function currentUser(): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->jsonResponseFactory->create(
+                (object) [
+                    'error' => true,
+                    'message' => Response::$statusTexts[Response::HTTP_UNAUTHORIZED],
+                    'description' => 'User not authenticated.',
+                    'code' => Response::HTTP_UNAUTHORIZED,
+                ],
+                Response::HTTP_UNAUTHORIZED,
+            );
+        }
+
+        return $this->jsonResponseFactory->create(
+            (object) [
+                'error' => false,
+                'message' => Response::$statusTexts[Response::HTTP_OK],
+                'code' => Response::HTTP_OK,
+                'datas' => $user,
+            ],
+            Response::HTTP_OK,
+        );
+    }
+
 
     #[Route('/create', name: 'app_user_new', methods: ['POST'])]
     public function create(Request $request, UserRepository $userRepository, UserPasswordHasherInterface $passwordHasher): JsonResponse

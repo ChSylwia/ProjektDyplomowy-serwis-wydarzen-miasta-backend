@@ -109,7 +109,7 @@ class GoogleAuthenticator extends AbstractAuthenticator
         $jwtToken = $this->jwtManager->create($user);
 
         // Redirect to the frontend with the token
-        $redirectUrl = sprintf('http://localhost:5173/profile?token=%s', $jwtToken);
+        $redirectUrl = sprintf('http://localhost:5173/success?token=%s', $jwtToken);
 
         return new RedirectResponse($redirectUrl);
     }
