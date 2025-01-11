@@ -11,8 +11,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Factory\JsonResponseFactory;
 use App\Services\ApiService;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 #[Route('/api/v1/local-events')]
 class LocalEventsController extends AbstractController
 {
@@ -101,20 +99,24 @@ class LocalEventsController extends AbstractController
     #[Route('/', name: 'local_events_list', methods: ['GET'])]
     public function list(LocalEventsRepository $repository): Response
     {
-        $events = $repository->findAll();
-        return $this->json($events, Response::HTTP_OK);
+        $currentUser = $this->getUser();
+
+        $events = $repository->findBy(['user' => $currentUser]);
+
+        return $this->json([$events, 'ok' => true], Response::HTTP_OK);
     }
 
     #[Route('/{id}', name: 'local_events_show', methods: ['GET'])]
     public function show(int $id, LocalEventsRepository $repository): Response
     {
+
         $event = $repository->find($id);
 
         if (!$event) {
             return $this->json(['error' => 'Event not found'], Response::HTTP_NOT_FOUND);
         }
 
-        return $this->json($event, Response::HTTP_OK);
+        return $this->json([$event, 'ok' => true], Response::HTTP_OK);
     }
 
     #[Route('/{id}/edit', name: 'local_events_edit', methods: ['PUT'])]
@@ -148,7 +150,7 @@ class LocalEventsController extends AbstractController
 
         $entityManager->flush();
 
-        return $this->json(['message' => 'Event updated successfully', 'event' => $event], Response::HTTP_OK);
+        return $this->json(['message' => 'Event updated successfully', 'event' => $event, 'ok' => true], Response::HTTP_OK);
     }
     #[Route('/{id}', name: 'local_events_delete', methods: ['DELETE'])]
     public function delete(int $id, EntityManagerInterface $entityManager, LocalEventsRepository $repository): Response
@@ -162,6 +164,6 @@ class LocalEventsController extends AbstractController
         $entityManager->remove($event);
         $entityManager->flush();
 
-        return $this->json(['message' => 'Event deleted successfully'], Response::HTTP_OK);
+        return $this->json(['message' => 'Event deleted successfully', 'ok' => true], Response::HTTP_OK);
     }
 }
