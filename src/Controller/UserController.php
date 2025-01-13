@@ -377,7 +377,76 @@ class UserController extends AbstractController
             );
         }
     }
+    #[Route('/edit/passwd', name: 'app_user_password', methods: ['POST'])]
+    public function editPassword(Request $request, UserRepository $userRepository, UserPasswordHasherInterface $passwordHasher): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->jsonResponseFactory->create(
+                (object) [
+                    'error' => true,
+                    'message' => Response::$statusTexts[Response::HTTP_UNAUTHORIZED],
+                    'description' => 'User not authenticated.',
+                    'code' => Response::HTTP_UNAUTHORIZED,
+                ],
+                Response::HTTP_UNAUTHORIZED,
+            );
+        }
 
+        $bodyData = json_decode($request->getContent(), true);
+        $currentPassword = $bodyData['currentPassword'] ?? null;
+        $newPassword = $bodyData['newPassword'] ?? null;
+
+        if (!$currentPassword || !$newPassword) {
+            return $this->jsonResponseFactory->create(
+                (object) [
+                    'error' => true,
+                    'message' => Response::$statusTexts[Response::HTTP_BAD_REQUEST],
+                    'description' => 'Current and new password are required.',
+                    'code' => Response::HTTP_BAD_REQUEST,
+                ],
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+
+        // Verify the current password
+        if (!$passwordHasher->isPasswordValid($user, $currentPassword)) {
+            return $this->jsonResponseFactory->create(
+                (object) [
+                    'error' => true,
+                    'message' => Response::$statusTexts[Response::HTTP_UNAUTHORIZED],
+                    'description' => 'Current password is incorrect.',
+                    'code' => Response::HTTP_UNAUTHORIZED,
+                ],
+                Response::HTTP_UNAUTHORIZED,
+            );
+        }
+
+        // Hash and update the password
+        $user->setPassword($passwordHasher->hashPassword($user, $newPassword));
+
+        try {
+            $userRepository->save($user, true);
+            return $this->jsonResponseFactory->create(
+                (object) [
+                    'error' => false,
+                    'message' => 'Password updated successfully.',
+                    'code' => Response::HTTP_OK,
+                ],
+                Response::HTTP_OK
+            );
+        } catch (\Throwable $th) {
+            return $this->jsonResponseFactory->create(
+                (object) [
+                    'error' => true,
+                    'message' => Response::$statusTexts[Response::HTTP_INTERNAL_SERVER_ERROR],
+                    'description' => 'An error occurred while updating the password.',
+                    'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
+                ],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+    }
 
     #[Route('/delete/{id}', name: 'app_user_delete', methods: ['DELETE'])]
     public function delete(Request $request, User $user = null, UserRepository $userRepository): JsonResponse
