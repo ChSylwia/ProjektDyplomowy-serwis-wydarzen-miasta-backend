@@ -86,6 +86,19 @@ symfony server:start
 
 php bin/console debug:router
 
+php bin/console app:download-events
+
+to enable xdebug
+edit in php.ini
+
+zend_extension="C:\xampp\php\ext\php_xdebug.dll"
+xdebug.mode = debug
+xdebug.start_with_request = yes
+xdebug.client_port = 9003
+xdebug.client_host = 127.0.0.1
+
+and reset server symfony
+
 ---
 
 ## Contributing

@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\LocalEvents;
 use App\Repository\LocalEventsRepository;
+use App\Repository\EventsRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -66,25 +67,48 @@ class AllLocalEventsController extends AbstractController
     }
 
     #[Route('/', name: 'all_local_events_list', methods: ['GET'])]
-    public function list(LocalEventsRepository $repository): Response
+    public function list(LocalEventsRepository $localEventsRepository, EventsRepository $repository): Response
     {
         // Fetch all events from the repository
-        $events = $repository->findAll();
+        $events = $localEventsRepository->findAll();
+        $events2 = $repository->findAll();
+
+        // Add markers to each event
+        $localEvents = array_map(fn($event) => [
+            'id' => 'local-' . $event->getId(),
+            'event' => $event
+        ], $events);
+
+        $globalEvents = array_map(fn($event) => [
+            'id' => 'global-' . $event->getId(),
+            'event' => $event
+        ], $events2);
 
         return $this->json([
-            'events' => $events,
+            'events' => array_merge($localEvents, $globalEvents),
             'ok' => true
         ], Response::HTTP_OK);
     }
 
+
     #[Route('/{id}', name: 'all_local_events_show', methods: ['GET'])]
-    public function show(int $id, LocalEventsRepository $repository): Response
+    public function show(int $id, LocalEventsRepository $localEventsRepository, EventsRepository $repository): Response
     {
+        // Try to find the event in the local events repository
+        $event = $localEventsRepository->find($id);
 
-        $event = $repository->find($id);
-
+        // If not found in the local repository, try to find it in the global repository
         if (!$event) {
-            return $this->json(['error' => 'Event not found'], Response::HTTP_NOT_FOUND);
+            $event = $repository->find($id);
+            // If not found in either repository, return an error
+            if (!$event) {
+                return $this->json(['error' => 'Event not found'], Response::HTTP_NOT_FOUND);
+            }
+            // Mark the event as global
+            $eventType = 'global';
+        } else {
+            // Mark the event as local
+            $eventType = 'local';
         }
 
         return $this->json([$event, 'ok' => true], Response::HTTP_OK);
