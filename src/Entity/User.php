@@ -50,6 +50,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?bool $termsAccepted = null;
 
 
+    #[ORM\OneToOne(mappedBy: 'user', targetEntity: GoogleIntegration::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private ?GoogleIntegration $googleIntegration = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -200,6 +203,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setTermsAccepted(bool $termsAccepted): static
     {
         $this->termsAccepted = $termsAccepted;
+
+        return $this;
+    }
+    public function getGoogleIntegration(): ?GoogleIntegration
+    {
+        return $this->googleIntegration;
+    }
+
+    public function setGoogleIntegration(?GoogleIntegration $googleIntegration): static
+    {
+        // Set the owning side of the relation if necessary
+        if ($googleIntegration !== null && $googleIntegration->getUser() !== $this) {
+            $googleIntegration->setUser($this);
+        }
+
+        $this->googleIntegration = $googleIntegration;
 
         return $this;
     }

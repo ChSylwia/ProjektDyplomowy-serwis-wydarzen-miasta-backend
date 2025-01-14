@@ -22,11 +22,14 @@ class GoogleController extends AbstractController
         // Retrieve credentials from the environment
         $clientId = $_ENV['OAUTH_GOOGLE_CLIENT_ID'];
         $redirectUri = 'http://127.0.0.1:8000/connect/google/check';
-        $scope = 'openid email profile';
+        $scopes = 'openid https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.email';
 
-        // Build the Google OAuth URL
-        $authUrl = "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id={$clientId}&redirect_uri={$redirectUri}&scope=" . urlencode($scope);
-
+        $authUrl = sprintf(
+            'https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=%s&redirect_uri=%s&scope=%s&access_type=offline&prompt=consent',
+            urlencode($clientId),
+            urlencode($redirectUri),
+            urlencode($scopes)
+        );
         return new RedirectResponse($authUrl);
     }
 

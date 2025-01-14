@@ -3,6 +3,8 @@
 namespace App\Security;
 
 use App\Entity\User;
+use App\Entity\GoogleIntegration;
+use App\Repository\GoogleIntegrationRepository;
 use App\Repository\UserRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,7 +24,8 @@ class GoogleAuthenticator extends AbstractAuthenticator
     public function __construct(
         HttpClientInterface $httpClient,
         private UserRepository $userRepository,
-        private JWTTokenManagerInterface $jwtManager
+        private JWTTokenManagerInterface $jwtManager,
+        private GoogleIntegrationRepository $googleIntegrationRepository
     ) {
         $this->httpClient = $httpClient;
     }
@@ -38,67 +41,87 @@ class GoogleAuthenticator extends AbstractAuthenticator
         if (!$code) {
             throw new \RuntimeException('No authorization code provided.');
         }
+
         $clientId = $_ENV['OAUTH_GOOGLE_CLIENT_ID'];
         $clientSecret = $_ENV['OAUTH_GOOGLE_CLIENT_SECRET'];
         $redirectUri = 'http://127.0.0.1:8000/connect/google/check';
 
-        $response = $this->httpClient->request('POST', 'https://oauth2.googleapis.com/token', [
-            'headers' => [
-                'Content-Type' => 'application/x-www-form-urlencoded',
-            ],
-            'body' => [
-                'code' => $code,
-                'client_id' => $clientId,
-                'client_secret' => $clientSecret,
-                'redirect_uri' => $redirectUri,
-                'grant_type' => 'authorization_code',
-            ],
-        ]);
+        $tokenData = null;
 
-        $statusCode = $response->getStatusCode();
-        // $responseContent = $response->getContent(false); // Disable exception for non-200 responses
-        // file_put_contents('google_auth_debug.log', "HTTP Status: $statusCode\nResponse: $responseContent\n", FILE_APPEND);
+        try {
+            $response = $this->httpClient->request('POST', 'https://oauth2.googleapis.com/token', [
+                'headers' => [
+                    'Content-Type' => 'application/x-www-form-urlencoded',
+                ],
+                'body' => [
+                    'code' => $code,
+                    'client_id' => $clientId,
+                    'client_secret' => $clientSecret,
+                    'redirect_uri' => $redirectUri,
+                    'grant_type' => 'authorization_code',
+                ],
+            ]);
 
-        if ($statusCode !== 200) {
-            throw new \RuntimeException("Failed to exchange code for token. HTTP Status: $statusCode");
-        }
+            if ($response->getStatusCode() !== 200) {
+                throw new \RuntimeException('Failed to exchange code for token. Status: ' . $response->getStatusCode());
+            }
 
-        $tokenData = json_decode($response->getContent(), true);
+            $tokenData = json_decode($response->getContent(), true);
 
-        if (!isset($tokenData['id_token'])) {
-            throw new \RuntimeException('No ID token returned from Google.');
+            if (!isset($tokenData['id_token'])) {
+                throw new \RuntimeException('No ID token returned from Google.');
+            }
+        } catch (\Exception $e) {
+            throw new \RuntimeException('Error during token exchange: ' . $e->getMessage());
         }
 
         $idToken = $tokenData['id_token'];
 
-        return new SelfValidatingPassport(new UserBadge($idToken, function ($idToken) {
+        return new SelfValidatingPassport(new UserBadge($idToken, function ($idToken) use ($tokenData) {
             $decodedToken = json_decode(base64_decode(str_replace(['-', '_'], ['+', '/'], explode('.', $idToken)[1])), true);
+            file_put_contents('google_token.log', print_r($decodedToken, true)); // Log the decoded token for inspection
 
             if (!isset($decodedToken['email'])) {
                 throw new \RuntimeException('No email found in ID token.');
             }
 
+            if (!isset($decodedToken['sub'])) {
+                throw new \RuntimeException('No Google ID (sub) found in ID token.');
+            }
+
             $email = $decodedToken['email'];
+            $googleId = $decodedToken['sub'];
 
             $user = $this->userRepository->findOneBy(['email' => $email]);
             if (!$user) {
                 $user = new User();
                 $user->setEmail($email);
-                $user->setPassword('google_user_placeholder');
+                $user->setPassword('google_user_placeholder'); // Placeholder password
                 $user->setFirstName($decodedToken['given_name'] ?? null);
                 $user->setLastName($decodedToken['family_name'] ?? null);
-                $user->setUsername($decodedToken['name'] ?? null); // Fallback to full name if username is not separate
-                $user->setCity(null); // Google does not provide city info directly
-                $user->setPostalCode(postalCode: null); // Google does not provide postal code directly
-                $user->setUserType('private'); // Default user type for Google
+                $user->setUsername($decodedToken['name'] ?? null);
+                $user->setUserType('private');
                 $user->setTermsAccepted(true);
-                $this->userRepository->save($user, flush: true);
-
+                $this->userRepository->save($user, true);
             }
 
+            $googleIntegration = $user->getGoogleIntegration();
+            if (!$googleIntegration) {
+                $googleIntegration = new GoogleIntegration();
+                $user->setGoogleIntegration($googleIntegration);
+            }
+
+            $googleIntegration->setGoogleId($googleId);
+            $googleIntegration->setAccessToken($tokenData['access_token']);
+            $googleIntegration->setRefreshToken($tokenData['refresh_token'] ?? null);
+
+            $this->googleIntegrationRepository->save($googleIntegration, true);
+
             return $user;
+
         }));
     }
+
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
