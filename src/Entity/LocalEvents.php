@@ -33,6 +33,9 @@ class LocalEvents
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $link = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $typeEvent = null;
+
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'localEvents')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
@@ -113,7 +116,15 @@ class LocalEvents
 
         return $this;
     }
-
+    public function getTypeEvent(): ?string
+    {
+        return $this->typeEvent;
+    }
+    public function setTypeEvent(?string $typeEvent): static
+    {
+        $this->typeEvent = $typeEvent;
+        return $this;
+    }
     public function getUser(): ?User
     {
         return $this->user;

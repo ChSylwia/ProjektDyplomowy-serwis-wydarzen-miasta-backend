@@ -41,6 +41,9 @@ class Events
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $link = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $typeEvent = null;
+
     public function __construct(
 
         string $external_id,
@@ -135,6 +138,14 @@ class Events
 
         return $this;
     }
-
+    public function getTypeEvent(): ?string
+    {
+        return $this->typeEvent;
+    }
+    public function setTypeEvent(?string $typeEvent): static
+    {
+        $this->typeEvent = $typeEvent;
+        return $this;
+    }
 
 }

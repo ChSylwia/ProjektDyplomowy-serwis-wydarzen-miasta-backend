@@ -26,7 +26,7 @@ class LocalEventsController extends AbstractController
             ],
             'create' => [
                 'query' => [],
-                'body' => ['title', 'description', 'date', 'price', 'link', 'image'],
+                'body' => ['title', 'description', 'date', 'price', 'link', 'image', 'typeEvent'],
             ],
             'get' => [
                 'query' => [],
@@ -48,7 +48,7 @@ class LocalEventsController extends AbstractController
             ],
             'create' => [
                 'query' => [],
-                'body' => ['title', 'description', 'date', 'price', 'link', 'image'],
+                'body' => ['title', 'description', 'date', 'price', 'link', 'image', 'typeEvent'],
             ],
             'get' => [
                 'query' => [],
@@ -90,7 +90,7 @@ class LocalEventsController extends AbstractController
         $event->setPrice($price_value);
         $event->setLink($link_value);
         $event->setImage($data['image'] ?? null);
-
+        $event->setTypeEvent("local-event");
         $entityManager->persist($event);
         $entityManager->flush();
 
