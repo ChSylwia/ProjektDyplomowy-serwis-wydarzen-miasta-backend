@@ -101,10 +101,18 @@ class LocalEventsController extends AbstractController
     {
         $currentUser = $this->getUser();
 
-        $events = $repository->findBy(['user' => $currentUser]);
+        // Modify the query to exclude events that are marked as deleted
+        $events = $repository->createQueryBuilder('e')
+            ->where('e.user = :user')
+            ->andWhere('e.deleted = :deleted OR e.deleted IS NULL')
+            ->setParameter('user', $currentUser)
+            ->setParameter('deleted', false)
+            ->getQuery()
+            ->getResult();
 
         return $this->json([$events, 'ok' => true], Response::HTTP_OK);
     }
+
 
     #[Route('/{id}', name: 'local_events_show', methods: ['GET'])]
     public function show(int $id, LocalEventsRepository $repository): Response
@@ -161,9 +169,11 @@ class LocalEventsController extends AbstractController
             return $this->json(['error' => 'Event not found'], Response::HTTP_NOT_FOUND);
         }
 
-        $entityManager->remove($event);
+        // Set the "deleted" flag to true instead of removing the event
+        $event->setDeleted(true);
         $entityManager->flush();
 
-        return $this->json(['message' => 'Event deleted successfully', 'ok' => true], Response::HTTP_OK);
+        return $this->json(['message' => 'Event marked as deleted successfully', 'ok' => true], Response::HTTP_OK);
     }
+
 }

@@ -151,7 +151,20 @@ class UserController extends AbstractController
         );
     }
 
+    #[Route('/me', name: 'user_me', methods: ['GET'])]
+    public function getUserDetails(): JsonResponse
+    {
+        $user = $this->getUser();
 
+        if (!$user) {
+            return $this->json(['error' => 'User not authenticated.'], 401);
+        }
+
+        return $this->json([
+            'id' => $user->getId(),
+            'user_type' => $user->getUserType(),
+        ]);
+    }
     #[Route('/create', name: 'app_user_new', methods: ['POST'])]
     public function create(Request $request, UserRepository $userRepository, UserPasswordHasherInterface $passwordHasher): JsonResponse
     {
@@ -167,6 +180,7 @@ class UserController extends AbstractController
             return $this->jsonResponseFactory->create(
                 (object) [
                     'error' => true,
+                    'ok' => false,
                     'message' => Response::$statusTexts[Response::HTTP_BAD_REQUEST],
                     'description' => 'The request has invalid query parameters or body fields.',
                     'code' => Response::HTTP_BAD_REQUEST,
@@ -180,12 +194,12 @@ class UserController extends AbstractController
         $bodyData = json_decode($request->getContent(), true);
 
         $email = $bodyData['email'] ?? null;
-        print_r($email);
         $is_email_unique = $userRepository->findUserByEmail($email) === null;
         if (!$is_email_unique) {
             return $this->jsonResponseFactory->create(
                 (object) [
                     'error' => true,
+                    'ok' => false,
                     'message' => Response::$statusTexts[Response::HTTP_BAD_REQUEST],
                     'description' => 'Not unique email!!!',
                     'code' => Response::HTTP_BAD_REQUEST,
@@ -213,6 +227,7 @@ class UserController extends AbstractController
             return $this->jsonResponseFactory->create(
                 (object) [
                     'error' => false,
+                    'ok' => true,
                     'message' => Response::$statusTexts[Response::HTTP_CREATED],
                     'description' => 'The resource has been created.',
                     'code' => Response::HTTP_CREATED,
@@ -224,6 +239,7 @@ class UserController extends AbstractController
             return $this->jsonResponseFactory->create(
                 (object) [
                     'error' => true,
+                    'ok' => false,
                     'message' => Response::$statusTexts[Response::HTTP_INTERNAL_SERVER_ERROR],
                     'description' => $th->getMessage(),
                     'code' => Response::HTTP_INTERNAL_SERVER_ERROR,

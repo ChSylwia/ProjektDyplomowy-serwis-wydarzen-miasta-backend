@@ -69,9 +69,15 @@ class AllLocalEventsController extends AbstractController
     #[Route('/', name: 'all_local_events_list', methods: ['GET'])]
     public function list(LocalEventsRepository $localEventsRepository, EventsRepository $repository): Response
     {
-        // Fetch all events from the repository
+        $currentDate = new \DateTime(); // Get current date and time
+
+        // Fetch all events from the repositories
         $events = $localEventsRepository->findAll();
         $events2 = $repository->findAll();
+
+        // Filter out events that have expired (date in the past)
+        $events = array_filter($events, fn($event) => $event->getDate() >= $currentDate && !$event->getDeleted());
+        $events2 = array_filter($events2, fn($event) => $event->getDate() >= $currentDate);
 
         // Add markers to each event
         $localEvents = array_map(fn($event) => [
