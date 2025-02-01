@@ -99,6 +99,8 @@ xdebug.client_host = 127.0.0.1
 
 and reset server symfony
 
+for front npm run dev 
+
 ---
 
 ## Contributing

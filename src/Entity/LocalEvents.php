@@ -28,8 +28,9 @@ class LocalEvents
     private ?\DateTimeInterface $date = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 6, scale: 2, nullable: true)]
-    private ?string $price = null;
-
+    private ?string $priceMin = null;
+    #[ORM\Column(type: Types::DECIMAL, precision: 6, scale: 2, nullable: true)]
+    private ?string $priceMax = null;
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $link = null;
 
@@ -42,6 +43,8 @@ class LocalEvents
 
     #[ORM\Column(nullable: true)]
     private ?bool $deleted = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $category = null;
 
     public function getId(): ?int
     {
@@ -96,18 +99,26 @@ class LocalEvents
         return $this;
     }
 
-    public function getPrice(): ?string
+    public function getPriceMin(): ?string
     {
-        return $this->price;
+        return $this->priceMin;
     }
-
-    public function setPrice(?string $price): static
+    public function getPriceMax(): ?string
     {
-        $this->price = $price;
+        return $this->priceMax;
+    }
+    public function setPriceMin(?string $priceMin): static
+    {
+        $this->priceMin = $priceMin;
 
         return $this;
     }
+    public function setPriceMax(?string $priceMax): static
+    {
+        $this->priceMax = $priceMax;
 
+        return $this;
+    }
     public function getLink(): ?string
     {
         return $this->link;
@@ -150,5 +161,14 @@ class LocalEvents
         $this->deleted = $deleted;
 
         return $this;
+    }
+    public function setCategory(?string $category): static
+    {
+        $this->category = $category;
+        return $this;
+    }
+    public function getCategory(): ?string
+    {
+        return $this->category;
     }
 }

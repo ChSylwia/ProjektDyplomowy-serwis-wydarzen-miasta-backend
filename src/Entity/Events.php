@@ -44,6 +44,9 @@ class Events
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $typeEvent = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $category = null;
+
     public function __construct(
 
         string $external_id,
@@ -147,5 +150,9 @@ class Events
         $this->typeEvent = $typeEvent;
         return $this;
     }
-
+    public function setCategory(?string $category): static
+    {
+        $this->category = $category;
+        return $this;
+    }
 }
