@@ -144,6 +144,7 @@ class LocalEventsController extends AbstractController
                 'description' => $event->getDescription(),
                 'date' => $event->getDate()->format('Y-m-d H:i:s'),
                 'image' => $event->getImage() ? $event->getImage() : null,
+                'category' => $event->getCategory(),
             ];
         }, $events);
 

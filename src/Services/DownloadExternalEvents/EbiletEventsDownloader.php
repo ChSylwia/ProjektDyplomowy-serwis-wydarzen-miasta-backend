@@ -115,7 +115,7 @@ class EbiletEventsDownloader implements DownloadExternalEventsInterface
         $event->setPrice(null); // Adjust if price is provided in the API
         $event->setLink("https://www.ebilet.pl/" . $eventData['category'] . "/" . $eventData['subcategory'] . "/" . $eventData['slug'] ?? null);
         $event->setTypeEvent("big-event");
-        $event->setCategory($eventData['category'] === '' ? 'inne' : $eventData['category']);
+        $event->setCategory($eventData['category'] === null ? 'inne' : $eventData['category']);
         return $event;
     }
 }

@@ -155,4 +155,8 @@ class Events
         $this->category = $category;
         return $this;
     }
+    public function getCategory(): ?string
+    {
+        return $this->category;
+    }
 }
