@@ -87,6 +87,8 @@ symfony server:start
 php bin/console debug:router
 
 php bin/console app:download-events
+php bin/console app:download-theatre-repertuar
+php bin/console app:download-cinema-repertuar
 
 to enable xdebug
 edit in php.ini
@@ -99,7 +101,7 @@ xdebug.client_host = 127.0.0.1
 
 and reset server symfony
 
-for front npm run dev 
+for front npm run dev
 
 ---
 
