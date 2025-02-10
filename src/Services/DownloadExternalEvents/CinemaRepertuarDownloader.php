@@ -158,7 +158,7 @@ class CinemaRepertuarDownloader implements DownloadExternalEventsInterface
         $event->setDescription("Nove kino Przedwiośnie zaprasza na film. \n" . $eventData['description']);
         $event->setImage($eventData['image']);
         $event->setLink($eventData['link']);
-        $event->setTypeEvent("local-event");
+        $event->setTypeEvent("cinema");
         $event->setCategory('kino');
 
         return $event;

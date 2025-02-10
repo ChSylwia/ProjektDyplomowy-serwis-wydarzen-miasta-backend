@@ -19,7 +19,7 @@ security:
       security: false
 
     login:
-      pattern: ^/api/v1/auth/login
+      pattern: ^/api/v1/auth/login_check
       stateless: true
       json_login:
         check_path: /api/v1/auth/login_check
@@ -46,7 +46,7 @@ security:
     - { path: ^/connect/google, roles: PUBLIC_ACCESS }
     - { path: ^/connect/google/check, roles: PUBLIC_ACCESS }
     - { path: ^/api/v1/auth/register, roles: PUBLIC_ACCESS }
-    - { path: ^/api/v1/auth/login, roles: PUBLIC_ACCESS }
+    - { path: ^/api/v1/auth/login_check, roles: PUBLIC_ACCESS }
     - { path: ^/api/v1/user/create, roles: PUBLIC_ACCESS }
     - { path: ^/api/v1/local-events, roles: PUBLIC_ACCESS }
     - { path: ^/api/v1/all-local-events, roles: PUBLIC_ACCESS }

@@ -155,16 +155,16 @@ class UserController extends AbstractController
     public function getUserDetails(): JsonResponse
     {
         $user = $this->getUser();
-
         if (!$user) {
             return $this->json(['error' => 'User not authenticated.'], 401);
         }
-
         return $this->json([
             'id' => $user->getId(),
             'user_type' => $user->getUserType(),
+            'roles' => $user->getRoles(),
         ]);
     }
+
     #[Route('/create', name: 'app_user_new', methods: ['POST'])]
     public function create(Request $request, UserRepository $userRepository, UserPasswordHasherInterface $passwordHasher): JsonResponse
     {

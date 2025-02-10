@@ -15,6 +15,7 @@ use App\Entity\User;
 use App\Repository\PasswordRequestTokenRepository;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTManager;
 
 #[Route('/api/v1/auth')]
 class SecurityController extends AbstractController
@@ -52,9 +53,15 @@ class SecurityController extends AbstractController
             ],
         ];
     }
+    #[Route('/login_check', name: 'app_security_login_check', methods: ['POST'])]
+    public function loginCheck()
+    {
+        // This method is intercepted by Symfony's security system, so no logic is required.
+        throw new \LogicException('This route should not be reached.');
+    }
 
     #[Route('/register', name: 'app_security_register', methods: ['POST'])]
-    public function index(Request $request, UserRepository $userRepository,  UserPasswordHasherInterface $passwordHasher): Response
+    public function index(Request $request, UserRepository $userRepository, UserPasswordHasherInterface $passwordHasher): Response
     {
 
         $requestValidation = $this->apiService->hasValidBodyAndQueryParameters(
@@ -98,12 +105,12 @@ class SecurityController extends AbstractController
         $user = new User();
         $user->setEmail($bodyData['email']);
         $user->setPassword($passwordHasher->hashPassword($user, $bodyData['password']));
-        
-        if(isset($bodyData['firstName'])){
+
+        if (isset($bodyData['firstName'])) {
             $user->setFirstName($bodyData['firstName']);
         }
-        
-        if(isset($bodyData['lastName'])){
+
+        if (isset($bodyData['lastName'])) {
             $user->setLastName($bodyData['lastName']);
         }
 
@@ -139,7 +146,7 @@ class SecurityController extends AbstractController
     public function passwordChangeRequest(User $user, Request $request, PasswordRequestTokenRepository $passwordRequestTokenRepository, UserRepository $userRepository, MailerInterface $mailer): Response
     {
 
-       
+
 
         $requestValidation = $this->apiService->hasValidBodyAndQueryParameters(
             $request,
@@ -286,7 +293,7 @@ class SecurityController extends AbstractController
 
         if ($passwordRequestToken->getToken() !== $bodyData['token']) {
             return $this->jsonResponseFactory->create(
-                (object) [ 
+                (object) [
                     'error' => true,
                     'message' => Response::$statusTexts[Response::HTTP_BAD_REQUEST],
                     'description' => 'The token is invalid.',
@@ -300,7 +307,7 @@ class SecurityController extends AbstractController
         if ($passwordRequestToken->getExpirationDate() < new \DateTimeImmutable()) {
             $passwordRequestTokenRepository->delete($passwordRequestToken);
             return $this->jsonResponseFactory->create(
-                (object) [ 
+                (object) [
                     'error' => true,
                     'message' => Response::$statusTexts[Response::HTTP_BAD_REQUEST],
                     'description' => 'The token is expired.',
@@ -313,7 +320,7 @@ class SecurityController extends AbstractController
 
         if (!$this->apiService->isValidPassword($bodyData['password'])) {
             return $this->jsonResponseFactory->create(
-                (object) [ 
+                (object) [
                     'error' => true,
                     'message' => Response::$statusTexts[Response::HTTP_BAD_REQUEST],
                     'description' => 'The password is invalid. It must contain at least 6 characters with uppercase, lowercase, symbol and digit included.',
