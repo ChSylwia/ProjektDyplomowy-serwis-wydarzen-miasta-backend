@@ -61,6 +61,10 @@ class AdminController extends AbstractController
                 'firstName' => $user->getFirstName(),
                 'lastName' => $user->getLastName(),
                 'roles' => $user->getRoles(),
+                'username' => $user->getUsername(),
+                'city' => $user->getCity(),
+                'postalCode' => $user->getPostalCode(),
+                'userType' => $user->getUserType(),
                 // Add other fields if needed
             ];
         }
@@ -80,7 +84,8 @@ class AdminController extends AbstractController
         }
 
         $data = json_decode($request->getContent(), true);
-        // Example: update first name, last name, and roles if provided.
+
+        // Aktualizuj pola, jeśli zostały przesłane w żądaniu.
         if (isset($data['firstName'])) {
             $user->setFirstName($data['firstName']);
         }
@@ -90,12 +95,27 @@ class AdminController extends AbstractController
         if (isset($data['roles']) && is_array($data['roles'])) {
             $user->setRoles($data['roles']);
         }
-        // Update additional fields as necessary.
+        if (isset($data['username'])) {
+            $user->setUsername($data['username']);
+        }
+        if (isset($data['city'])) {
+            $user->setCity($data['city']);
+        }
+        if (isset($data['postalCode'])) {
+            $user->setPostalCode($data['postalCode']);
+        }
+        if (isset($data['userType'])) {
+            $user->setUserType($data['userType']);
+        }
+        if (isset($data['termsAccepted'])) {
+            $user->setTermsAccepted($data['termsAccepted']);
+        }
 
         $em->flush();
 
         return new JsonResponse(['status' => 'User updated successfully']);
     }
+
 
     /**
      * Delete a user.
@@ -106,6 +126,10 @@ class AdminController extends AbstractController
         $user = $em->getRepository(User::class)->find($id);
         if (!$user) {
             return new JsonResponse(['error' => 'User not found'], 404);
+        }
+        $articles = $em->getRepository(LocalEvents::class)->findBy(['user' => $user]);
+        foreach ($articles as $article) {
+            $em->remove($article);
         }
 
         $em->remove($user);
@@ -140,6 +164,7 @@ class AdminController extends AbstractController
                 'typeEvent' => $event->getTypeEvent(),
                 'category' => $event->getCategory(),
                 'deleted' => $event->getDeleted(),
+                'image' => $event->getImage()
             ];
         }
 
@@ -157,7 +182,10 @@ class AdminController extends AbstractController
             return new JsonResponse(['error' => 'Local event not found'], 404);
         }
 
-        $data = json_decode($request->getContent(), true);
+        $data = $request->request->all();
+
+
+
         if (isset($data['title'])) {
             $event->setTitle($data['title']);
         }
@@ -186,7 +214,21 @@ class AdminController extends AbstractController
             $event->setDeleted($data['deleted']);
         }
         // Update additional fields as needed.
+        $uploadedFile = $request->files->get('image');
 
+        if ($uploadedFile) {
+            $uploadsDir = $this->getParameter('upload_dir');
+            $fileName = uniqid() . '.' . $uploadedFile->guessExtension();
+
+            try {
+                // Save the image file
+                $uploadedFile->move($uploadsDir, $fileName);
+                // Set the image URL in the event
+                $event->setImage($request->getSchemeAndHttpHost() . '/uploads/' . $fileName);
+            } catch (\Exception $e) {
+                return new JsonResponse(['error' => 'File upload failed'], 500);
+            }
+        }
         $em->flush();
 
         return new JsonResponse(['status' => 'Local event updated successfully']);
@@ -252,8 +294,7 @@ class AdminController extends AbstractController
         if (!$event) {
             return new JsonResponse(['error' => 'Event not found'], 404);
         }
-
-        $data = json_decode($request->getContent(), true);
+        $data = $request->request->all();
         if (isset($data['title'])) {
             $event->setTitle($data['title']);
         }
@@ -275,10 +316,21 @@ class AdminController extends AbstractController
         if (isset($data['category'])) {
             $event->setCategory($data['category']);
         }
-        if (isset($data['image'])) {
-            $event->setImage($data['image']);
+        $uploadedFile = $request->files->get('image');
+
+        if ($uploadedFile) {
+            $uploadsDir = $this->getParameter('upload_dir');
+            $fileName = uniqid() . '.' . $uploadedFile->guessExtension();
+
+            try {
+                // Save the image file
+                $uploadedFile->move($uploadsDir, $fileName);
+                // Set the image URL in the event
+                $event->setImage($request->getSchemeAndHttpHost() . '/uploads/' . $fileName);
+            } catch (\Exception $e) {
+                return new JsonResponse(['error' => 'File upload failed'], 500);
+            }
         }
-        // Update additional fields as needed.
 
         $em->flush();
 
