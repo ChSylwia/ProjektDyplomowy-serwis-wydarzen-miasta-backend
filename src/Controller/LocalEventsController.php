@@ -11,6 +11,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Factory\JsonResponseFactory;
 use App\Services\ApiService;
+
+
 #[Route('/api/v1/local-events')]
 class LocalEventsController extends AbstractController
 {
@@ -94,9 +96,10 @@ class LocalEventsController extends AbstractController
             return $this->json(['error' => 'File upload failed'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        $priceMin = $data['priceMin'] === "" ? null : (float) $data['priceMin'];
-        $priceMax = $data['priceMax'] === "" ? null : (float) $data['priceMax'];
-        $link = $data['link'] === "" ? null : $data['link'];
+        $priceMin = isset($data['priceMin']) && $data['priceMin'] !== "" ? (float) $data['priceMin'] : null;
+        $priceMax = isset($data['priceMax']) && $data['priceMax'] !== "" ? (float) $data['priceMax'] : null;
+
+        $link = isset($data['link']) && $data['link'] !== "" ? $data['link'] : null;
 
         // Sprawdzamy czy priceMin nie jest większe niż priceMax
         if ($priceMin !== null && $priceMax !== null && $priceMin > $priceMax) {
@@ -177,7 +180,8 @@ class LocalEventsController extends AbstractController
             return $this->json(['error' => 'Event not found'], Response::HTTP_NOT_FOUND);
         }
 
-        $data = json_decode($request->getContent(), true);
+        $data = $request->request->all();  // Pobiera dane z formularza
+
 
         // Walidacja daty - musi być przyszła
         if (isset($data['date'])) {
@@ -188,10 +192,9 @@ class LocalEventsController extends AbstractController
             }
             $event->setDate($eventDate);
         }
+        $priceMin = $request->request->get('priceMin') !== null ? (float) $request->request->get('priceMin') : null;
+        $priceMax = $request->request->get('priceMax') !== null ? (float) $request->request->get('priceMax') : null;
 
-        // Walidacja cen
-        $priceMin = isset($data['priceMin']) && $data['priceMin'] !== "" ? (float) $data['priceMin'] : null;
-        $priceMax = isset($data['priceMax']) && $data['priceMax'] !== "" ? (float) $data['priceMax'] : null;
 
         if ($priceMin !== null && $priceMax !== null && $priceMin > $priceMax) {
             return $this->json(['error' => 'Minimalna cena nie może być większa niż maksymalna cena.'], Response::HTTP_BAD_REQUEST);
@@ -206,9 +209,23 @@ class LocalEventsController extends AbstractController
         if (isset($data['link'])) {
             $event->setLink($data['link']);
         }
-        if (isset($data['image'])) {
-            $event->setImage($data['image']);
+        if (isset($data['category'])) {
+            $event->setCategory($data['category']);
         }
+        $uploadedFile = $request->files->get('image');
+
+        if ($uploadedFile) { // Sprawdzamy, czy plik faktycznie został przesłany
+            $uploadsDir = $this->getParameter('upload_dir');
+            $fileName = uniqid() . '.' . $uploadedFile->guessExtension();
+
+            try {
+                $uploadedFile->move($uploadsDir, $fileName);
+                $event->setImage($request->getSchemeAndHttpHost() . '/uploads/' . $fileName);
+            } catch (\Exception $e) {
+                return $this->json(['error' => 'File upload failed'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+        }
+
 
         $event->setPriceMin($priceMin);
         $event->setPriceMax($priceMax);
