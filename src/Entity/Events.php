@@ -44,8 +44,11 @@ class Events
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $typeEvent = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $category = null;
+
+    #[ORM\Column]
+    private array $category = [];
+
+
 
     public function __construct(
 
@@ -150,13 +153,18 @@ class Events
         $this->typeEvent = $typeEvent;
         return $this;
     }
-    public function setCategory(?string $category): static
+
+    public function getCategory(): array
+    {
+        $category = $this->category;
+
+        return array_unique($category);
+    }
+
+    public function setCategory(array $category): static
     {
         $this->category = $category;
+
         return $this;
-    }
-    public function getCategory(): ?string
-    {
-        return $this->category;
     }
 }

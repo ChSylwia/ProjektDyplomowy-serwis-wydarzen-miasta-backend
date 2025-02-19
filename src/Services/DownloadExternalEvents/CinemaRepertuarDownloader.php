@@ -159,7 +159,7 @@ class CinemaRepertuarDownloader implements DownloadExternalEventsInterface
         $event->setImage($eventData['image']);
         $event->setLink($eventData['link']);
         $event->setTypeEvent("cinema");
-        $event->setCategory('kino');
+        $event->setCategory(['kino']);
 
         return $event;
     }

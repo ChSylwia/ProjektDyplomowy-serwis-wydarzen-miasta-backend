@@ -211,7 +211,7 @@ class AdminController extends AbstractController
             $event->setCategory($data['category']);
         }
         if (isset($data['deleted'])) {
-            $event->setDeleted($data['deleted']);
+            $event->setDeleted(filter_var($data['deleted'], FILTER_VALIDATE_BOOLEAN));
         }
         // Update additional fields as needed.
         $uploadedFile = $request->files->get('image');

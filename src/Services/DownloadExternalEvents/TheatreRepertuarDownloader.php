@@ -141,7 +141,8 @@ class TheatreRepertuarDownloader implements DownloadExternalEventsInterface
         $event->setImage($eventData['image']);
         $event->setLink($eventData['link']);
         $event->setTypeEvent("local-event");
-        $event->setCategory('teatr');
+        $event->setCategory(['teatr']);
+
 
         return $event;
     }

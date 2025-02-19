@@ -43,8 +43,11 @@ class LocalEvents
 
     #[ORM\Column(nullable: true)]
     private ?bool $deleted = null;
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $category = null;
+
+
+    #[ORM\Column]
+    private array $category = [];
+
 
     public function getId(): ?int
     {
@@ -162,13 +165,19 @@ class LocalEvents
 
         return $this;
     }
-    public function setCategory(?string $category): static
+
+
+    public function getCategory(): array
+    {
+        $category = $this->category;
+
+        return array_unique($category);
+    }
+
+    public function setCategory(array $category): static
     {
         $this->category = $category;
+
         return $this;
-    }
-    public function getCategory(): ?string
-    {
-        return $this->category;
     }
 }

@@ -12,7 +12,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use App\Factory\JsonResponseFactory;
 use App\Services\ApiService;
 
-
 #[Route('/api/v1/local-events')]
 class LocalEventsController extends AbstractController
 {
@@ -28,7 +27,7 @@ class LocalEventsController extends AbstractController
             ],
             'create' => [
                 'query' => [],
-                'body' => ['title', 'description', 'date', 'price', 'link', 'image', 'typeEvent'],
+                'body' => ['title', 'description', 'date', 'price', 'link', 'image', 'typeEvent', 'category'],
             ],
             'get' => [
                 'query' => [],
@@ -36,7 +35,7 @@ class LocalEventsController extends AbstractController
             ],
             'edit' => [
                 'query' => [],
-                'body' => ['title', 'description', 'date', 'price', 'link', 'image'],
+                'body' => ['title', 'description', 'date', 'price', 'link', 'image', 'category'],
             ],
             'delete' => [
                 'query' => [],
@@ -119,7 +118,27 @@ class LocalEventsController extends AbstractController
         $event->setLink($link);
         $event->setImage($request->getSchemeAndHttpHost() . '/uploads/' . $fileName);
         $event->setTypeEvent("local-event");
-        $event->setCategory($data['category'] === '' ? 'inne' : $data['category']);
+
+        // Process the category data to support multiple categories
+        $categories = $data['category'] ?? null; // Use null if not provided
+        if (!$categories || (is_string($categories) && trim($categories) === '')) {
+            // If no valid category data provided, default to ['inne']
+            $categories = ['inne'];
+        } elseif (!is_array($categories)) {
+            // If a string is provided, assume comma-separated values
+            $categories = explode(',', $categories);
+            $categories = array_map('trim', $categories);
+            // Remove any empty values
+            $categories = array_filter($categories, fn($cat) => $cat !== '');
+            $categories = array_values($categories);
+            // If the resulting array is empty, default to ['inne']
+            if (empty($categories)) {
+                $categories = ['inne'];
+            }
+        }
+        $event->setCategory($categories);
+
+
 
         $entityManager->persist($event);
         $entityManager->flush();
@@ -127,12 +146,13 @@ class LocalEventsController extends AbstractController
         return $this->json(['message' => 'Event created successfully', 'event' => $event, 'ok' => true], Response::HTTP_CREATED);
     }
 
-
-
     #[Route('/', name: 'local_events_list', methods: ['GET'])]
     public function list(LocalEventsRepository $repository): Response
     {
         $currentUser = $this->getUser();
+        /**
+         * @var array<array-key,LocalEvents>
+         */
         $events = $repository->createQueryBuilder('e')
             ->where('e.user = :user')
             ->andWhere('e.deleted = :deleted OR e.deleted IS NULL')
@@ -140,7 +160,8 @@ class LocalEventsController extends AbstractController
             ->setParameter('deleted', false)
             ->getQuery()
             ->getResult();
-        $formattedEvents = array_map(function ($event) {
+
+        $formattedEvents = array_map(function (LocalEvents $event) {
             return [
                 'id' => $event->getId(),
                 'title' => $event->getTitle(),
@@ -154,11 +175,9 @@ class LocalEventsController extends AbstractController
         return $this->json([$formattedEvents, 'ok' => true], Response::HTTP_OK);
     }
 
-
     #[Route('/{id}', name: 'local_events_show', methods: ['GET'])]
     public function show(int $id, LocalEventsRepository $repository): Response
     {
-
         $event = $repository->find($id);
 
         if (!$event) {
@@ -182,7 +201,6 @@ class LocalEventsController extends AbstractController
 
         $data = $request->request->all();  // Pobiera dane z formularza
 
-
         // Walidacja daty - musi być przyszła
         if (isset($data['date'])) {
             $eventDate = new \DateTime($data['date']);
@@ -192,9 +210,9 @@ class LocalEventsController extends AbstractController
             }
             $event->setDate($eventDate);
         }
+
         $priceMin = $request->request->get('priceMin') !== null ? (float) $request->request->get('priceMin') : null;
         $priceMax = $request->request->get('priceMax') !== null ? (float) $request->request->get('priceMax') : null;
-
 
         if ($priceMin !== null && $priceMax !== null && $priceMin > $priceMax) {
             return $this->json(['error' => 'Minimalna cena nie może być większa niż maksymalna cena.'], Response::HTTP_BAD_REQUEST);
@@ -210,10 +228,23 @@ class LocalEventsController extends AbstractController
             $event->setLink($data['link']);
         }
         if (isset($data['category'])) {
-            $event->setCategory($data['category']);
+            $categories = $data['category'] ?? null;
+            if (!$categories || (is_string($categories) && trim($categories) === '')) {
+                $categories = ['inne'];
+            } elseif (!is_array($categories)) {
+                $categories = explode(',', $categories);
+                $categories = array_map('trim', $categories);
+                $categories = array_filter($categories, fn($cat) => $cat !== '');
+                $categories = array_values($categories);
+                if (empty($categories)) {
+                    $categories = ['inne'];
+                }
+            }
+            $event->setCategory($categories);
         }
-        $uploadedFile = $request->files->get('image');
 
+
+        $uploadedFile = $request->files->get('image');
         if ($uploadedFile) { // Sprawdzamy, czy plik faktycznie został przesłany
             $uploadsDir = $this->getParameter('upload_dir');
             $fileName = uniqid() . '.' . $uploadedFile->guessExtension();
@@ -225,7 +256,6 @@ class LocalEventsController extends AbstractController
                 return $this->json(['error' => 'File upload failed'], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
         }
-
 
         $event->setPriceMin($priceMin);
         $event->setPriceMax($priceMax);
@@ -250,5 +280,4 @@ class LocalEventsController extends AbstractController
 
         return $this->json(['message' => 'Event marked as deleted successfully', 'ok' => true], Response::HTTP_OK);
     }
-
 }
