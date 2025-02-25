@@ -2,8 +2,6 @@
 
 namespace App\Controller;
 
-use App\Repository\ActiveLocalEventRepository;
-use App\Repository\ActiveEventRepository;
 use App\Entity\LocalEvents;
 use App\Repository\LocalEventsRepository;
 use App\Repository\EventsRepository;
@@ -69,24 +67,28 @@ class AllLocalEventsController extends AbstractController
     }
 
     #[Route('/', name: 'all_local_events_list', methods: ['GET'])]
-    public function list(
-        ActiveLocalEventRepository $activeLocalEventRepository,
-        ActiveEventRepository $activeEventRepository
-    ): Response {
-        // Fetch all active events from the views directly
-        $activeLocalEvents = $activeLocalEventRepository->findAll();
-        $activeGlobalEvents = $activeEventRepository->findAll();
+    public function list(LocalEventsRepository $localEventsRepository, EventsRepository $repository): Response
+    {
+        $currentDate = new \DateTime(); // Get current date and time
+
+        // Fetch all events from the repositories
+        $events = $localEventsRepository->findAll();
+        $events2 = $repository->findAll();
+
+        // Filter out events that have expired (date in the past)
+        $events = array_filter($events, fn($event) => $event->getDate() >= $currentDate && !$event->getDeleted());
+        $events2 = array_filter($events2, fn($event) => $event->getDate() >= $currentDate);
 
         // Add markers to each event
         $localEvents = array_map(fn($event) => [
             'id' => 'local-' . $event->getId(),
             'event' => $event
-        ], $activeLocalEvents);
+        ], $events);
 
         $globalEvents = array_map(fn($event) => [
             'id' => 'global-' . $event->getId(),
             'event' => $event
-        ], $activeGlobalEvents);
+        ], $events2);
 
         return $this->json([
             'events' => array_merge($localEvents, $globalEvents),
@@ -96,17 +98,14 @@ class AllLocalEventsController extends AbstractController
 
 
     #[Route('/{id}', name: 'all_local_events_show', methods: ['GET'])]
-    public function show(
-        int $id,
-        ActiveLocalEventRepository $activeLocalEventRepository,
-        ActiveEventRepository $activeEventRepository
-    ): Response {
-        // Try to find the event in the active local events view
-        $event = $activeLocalEventRepository->find($id);
+    public function show(int $id, LocalEventsRepository $localEventsRepository, EventsRepository $repository): Response
+    {
+        // Try to find the event in the local events repository
+        $event = $localEventsRepository->find($id);
 
         // If not found in the local repository, try to find it in the global repository
         if (!$event) {
-            $event = $activeEventRepository->find($id);
+            $event = $repository->find($id);
             // If not found in either repository, return an error
             if (!$event) {
                 return $this->json(['error' => 'Event not found'], Response::HTTP_NOT_FOUND);

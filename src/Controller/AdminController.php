@@ -63,7 +63,6 @@ class AdminController extends AbstractController
                 'roles' => $user->getRoles(),
                 'username' => $user->getUsername(),
                 'city' => $user->getCity(),
-                'postalCode' => $user->getPostalCode(),
                 'userType' => $user->getUserType(),
                 // Add other fields if needed
             ];
@@ -100,9 +99,6 @@ class AdminController extends AbstractController
         }
         if (isset($data['city'])) {
             $user->setCity($data['city']);
-        }
-        if (isset($data['postalCode'])) {
-            $user->setPostalCode($data['postalCode']);
         }
         if (isset($data['userType'])) {
             $user->setUserType($data['userType']);

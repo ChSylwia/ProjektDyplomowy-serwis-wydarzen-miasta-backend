@@ -16,7 +16,7 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-
+use Google\Client as GoogleClient;
 class GoogleAuthenticator extends AbstractAuthenticator
 {
     private HttpClientInterface $httpClient;
@@ -97,9 +97,9 @@ class GoogleAuthenticator extends AbstractAuthenticator
                 $user = new User();
                 $user->setEmail($email);
                 $user->setPassword('google_user_placeholder'); // Placeholder password
-                $user->setFirstName($decodedToken['given_name'] ?? null);
-                $user->setLastName($decodedToken['family_name'] ?? null);
-                $user->setUsername($decodedToken['name'] ?? null);
+                $user->setFirstName($decodedToken['given_name'] ?? 'Google');
+                $user->setLastName($decodedToken['family_name'] ?? 'User');
+                $user->setUsername($decodedToken['name'] ?? 'Google User');
                 $user->setUserType('private');
                 $user->setTermsAccepted(true);
                 $this->userRepository->save($user, true);
@@ -115,7 +115,6 @@ class GoogleAuthenticator extends AbstractAuthenticator
             $googleIntegration->setAccessToken($tokenData['access_token']);
             $googleIntegration->setRefreshToken($tokenData['refresh_token'] ?? null);
 
-            $this->googleIntegrationRepository->save($googleIntegration, true);
 
             return $user;
 

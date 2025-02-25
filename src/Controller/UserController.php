@@ -29,7 +29,7 @@ class UserController extends AbstractController
             ],
             'create' => [
                 'query' => [],
-                'body' => ['firstName', 'lastName', 'email', 'password', 'username', 'city', 'postalCode', 'userType', 'termsAccepted'],
+                'body' => ['firstName', 'lastName', 'email', 'password', 'username', 'city', 'userType', 'termsAccepted'],
             ],
             'get' => [
                 'query' => [],
@@ -37,7 +37,7 @@ class UserController extends AbstractController
             ],
             'edit' => [
                 'query' => [],
-                'body' => ['firstName', 'lastName', 'email', 'username', 'city', 'postalCode', 'userType', 'termsAccepted'],
+                'body' => ['firstName', 'lastName', 'email', 'username', 'city', 'userType', 'termsAccepted'],
             ],
             'delete' => [
                 'query' => [],
@@ -51,7 +51,7 @@ class UserController extends AbstractController
             ],
             'create' => [
                 'query' => [],
-                'body' => ['firstName', 'lastName', 'email', 'password', 'city', 'postalCode', 'userType', 'termsAccepted'],
+                'body' => ['firstName', 'lastName', 'email', 'password', 'city', 'userType', 'termsAccepted'],
             ],
             'get' => [
                 'query' => [],
@@ -216,7 +216,6 @@ class UserController extends AbstractController
         $user->setEmail($email);
         $user->setUsername($bodyData['username'] ?? null);
         $user->setCity($bodyData['city'] ?? null);
-        $user->setPostalCode($bodyData['postalCode'] ?? null);
         $user->setUserType($bodyData['userType'] ?? null);
         $user->setTermsAccepted($bodyData['termsAccepted'] ?? false);
         $user->setPassword($passwordHasher->hashPassword($user, $bodyData['password'] ?? null));

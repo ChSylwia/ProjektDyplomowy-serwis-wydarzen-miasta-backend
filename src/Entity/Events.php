@@ -8,7 +8,10 @@ use Doctrine\ORM\Mapping as ORM;
 
 
 #[ORM\Entity(repositoryClass: EventsRepository::class)]
-#[ORM\UniqueConstraint(name: "unique_external_id_source", columns: ["external_id", "source"])]
+#[ORM\Table(
+    name: "events",
+    uniqueConstraints: [new ORM\UniqueConstraint(name: "unique_external_id_source", columns: ["external_id", "source"])]
+)]
 class Events
 {
     #[ORM\Id]
@@ -45,7 +48,7 @@ class Events
     private ?string $typeEvent = null;
 
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'json')]
     private array $category = [];
 
 
@@ -156,15 +159,12 @@ class Events
 
     public function getCategory(): array
     {
-        $category = $this->category;
-
-        return array_unique($category);
+        return array_unique($this->category);
     }
 
-    public function setCategory(array $category): static
+    public function setCategory(array $category): self
     {
         $this->category = $category;
-
         return $this;
     }
 }
