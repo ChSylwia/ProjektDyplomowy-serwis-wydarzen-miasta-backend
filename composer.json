@@ -5,6 +5,8 @@
   "prefer-stable": true,
   "require": {
     "php": ">=8.1",
+    "ext-sqlsrv": "^5.11",
+    "ext-pdo_sqlsrv": "^5.11",
     "ext-ctype": "*",
     "ext-iconv": "*",
     "doctrine/dbal": "*",
