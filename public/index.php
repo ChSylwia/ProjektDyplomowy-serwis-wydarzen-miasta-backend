@@ -1,6 +1,4 @@
 <?php
-file_put_contents('/tmp/debug.log', $_SERVER['REQUEST_URI'] . PHP_EOL, FILE_APPEND);
-
 
 use App\Kernel;
 
