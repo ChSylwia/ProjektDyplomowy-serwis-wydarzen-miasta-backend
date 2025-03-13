@@ -88,7 +88,7 @@ class TheatreRepertuarDownloader implements DownloadExternalEventsInterface
             }
 
             $description = "Teatr dramatyczny w Płocku zaprasza na sztukę. \n Scena: " . $scene;
-            $image = 'http://127.0.0.1:8000/uploads/Teatr-dramatyczny-plock.png';
+            $image = 'https://chwileplocka-backend-72c2516b9445.herokuapp.com/uploads/Teatr-dramatyczny-plock.png';
             $eventsData[] = [
                 'date' => $date->format('Y-m-d H:i'),
                 'title' => $title,

@@ -44,7 +44,7 @@ class GoogleAuthenticator extends AbstractAuthenticator
 
         $clientId = $_ENV['OAUTH_GOOGLE_CLIENT_ID'];
         $clientSecret = $_ENV['OAUTH_GOOGLE_CLIENT_SECRET'];
-        $redirectUri = 'http://127.0.0.1:8000/connect/google/check';
+        $redirectUri = 'https://chwileplocka-backend-72c2516b9445.herokuapp.com/connect/google/check';
 
         $tokenData = null;
 
