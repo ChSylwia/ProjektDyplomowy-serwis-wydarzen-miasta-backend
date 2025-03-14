@@ -131,7 +131,7 @@ class GoogleAuthenticator extends AbstractAuthenticator
         $jwtToken = $this->jwtManager->create($user);
 
         // Redirect to the frontend with the token
-        $redirectUrl = sprintf('https://www.chwileplocka.tech/success?token=%s', $jwtToken);
+        $redirectUrl = sprintf('https://www.chwileplocka.tech/success?token=%s', urlencode($jwtToken));
 
         return new RedirectResponse($redirectUrl);
     }
