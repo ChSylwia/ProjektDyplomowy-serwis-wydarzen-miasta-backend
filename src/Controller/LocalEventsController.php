@@ -105,7 +105,6 @@ class LocalEventsController extends AbstractController
                 'Bucket' => $bucket,
                 'Key' => $uploadsDir,
                 'Body' => fopen($uploadedFile->getPathname(), 'rb'),
-                'ACL' => 'public-read', // Make file publicly accessible
                 'ContentType' => $uploadedFile->getMimeType()
             ]);
             $imageUrl = $result['ObjectURL']; // Get public URL of the uploaded image
