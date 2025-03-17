@@ -68,7 +68,7 @@ class LocalEventsController extends AbstractController
     }
 
     #[Route('/create', name: 'local_events_create', methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $entityManager, S3Client $s3Client): Response
+    public function create(Request $request, EntityManagerInterface $entityManager): Response
     {
         $data = $request->request->all();
         $uploadedFile = $request->files->get('image');
@@ -86,7 +86,14 @@ class LocalEventsController extends AbstractController
         if ($eventDate < $currentDate) {
             return $this->json(['error' => 'Data wydarzenia musi być w przyszłości.'], Response::HTTP_BAD_REQUEST);
         }
-
+        $s3Client = new S3Client([
+            'version' => 'latest',
+            'region' => getenv('AWS_DEFAULT_REGION'),
+            'credentials' => [
+                'key' => getenv('AWS_ACCESS_KEY_ID'),
+                'secret' => getenv('AWS_SECRET_ACCESS_KEY'),
+            ],
+        ]);
 
         $fileName = uniqid() . '.' . $uploadedFile->guessExtension();
         $bucket = 'chwile-plocka'; // Your bucket name
@@ -204,8 +211,7 @@ class LocalEventsController extends AbstractController
         int $id,
         Request $request,
         EntityManagerInterface $entityManager,
-        LocalEventsRepository $repository,
-        S3Client $s3Client
+        LocalEventsRepository $repository
     ): Response {
         $event = $repository->find($id);
         if (!$event) {
@@ -255,6 +261,14 @@ class LocalEventsController extends AbstractController
             }
             $event->setCategory($categories);
         }
+        $s3Client = new S3Client([
+            'version' => 'latest',
+            'region' => getenv('AWS_DEFAULT_REGION'),
+            'credentials' => [
+                'key' => getenv('AWS_ACCESS_KEY_ID'),
+                'secret' => getenv('AWS_SECRET_ACCESS_KEY'),
+            ],
+        ]);
 
 
         $uploadedFile = $request->files->get('image');
