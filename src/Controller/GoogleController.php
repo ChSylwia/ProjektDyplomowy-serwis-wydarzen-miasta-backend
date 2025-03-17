@@ -22,7 +22,7 @@ class GoogleController extends AbstractController
         // Retrieve credentials from the environment
         $clientId = $_ENV['OAUTH_GOOGLE_CLIENT_ID'];
         $redirectUri = 'https://chwileplocka-backend-72c2516b9445.herokuapp.com/connect/google/check';
-        $scopes = 'openid https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.email';
+        $scopes = 'openid profile https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.email';
 
         $authUrl = sprintf(
             'https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=%s&redirect_uri=%s&scope=%s&access_type=offline&prompt=consent',
