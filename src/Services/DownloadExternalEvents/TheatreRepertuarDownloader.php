@@ -88,7 +88,7 @@ class TheatreRepertuarDownloader implements DownloadExternalEventsInterface
             }
 
             $description = "Teatr dramatyczny w Płocku zaprasza na sztukę. \n Scena: " . $scene;
-            $image = 'https://chwile-plocka.s3.amazonaws.com/Teatr-dramatyczny-plock.png';
+            $image = 'https://chwile-plocka.s3.eu-north-1.amazonaws.com/Teatr-dramatyczny-plock.png';
             $eventsData[] = [
                 'date' => $date->format('Y-m-d H:i'),
                 'title' => $title,
