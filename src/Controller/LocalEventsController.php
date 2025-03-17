@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use Aws\S3\S3Client;
 use App\Entity\LocalEvents;
 use App\Repository\LocalEventsRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -67,7 +68,7 @@ class LocalEventsController extends AbstractController
     }
 
     #[Route('/create', name: 'local_events_create', methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $entityManager): Response
+    public function create(Request $request, EntityManagerInterface $entityManager, S3Client $s3Client): Response
     {
         $data = $request->request->all();
         $uploadedFile = $request->files->get('image');
@@ -86,13 +87,24 @@ class LocalEventsController extends AbstractController
             return $this->json(['error' => 'Data wydarzenia musi być w przyszłości.'], Response::HTTP_BAD_REQUEST);
         }
 
-        $uploadsDir = $this->getParameter('upload_dir');
+
         $fileName = uniqid() . '.' . $uploadedFile->guessExtension();
+        $bucket = 'chwile-plocka'; // Your bucket name
+        $uploadsDir = 'uploads/' . $fileName; // Folder in bucket
 
         try {
-            $uploadedFile->move($uploadsDir, $fileName);
+            // Upload file to S3
+            $result = $s3Client->putObject([
+                'Bucket' => $bucket,
+                'Key' => $uploadsDir,
+                'Body' => fopen($uploadedFile->getPathname(), 'rb'),
+                'ACL' => 'public-read', // Make file publicly accessible
+                'ContentType' => $uploadedFile->getMimeType()
+            ]);
+            $imageUrl = $result['ObjectURL']; // Get public URL of the uploaded image
+
         } catch (\Exception $e) {
-            return $this->json(['error' => 'File upload failed'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->json(['error' => 'File upload failed: ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         $priceMin = isset($data['priceMin']) && $data['priceMin'] !== "" ? (float) $data['priceMin'] : null;
@@ -116,7 +128,7 @@ class LocalEventsController extends AbstractController
         $event->setPriceMin($priceMin);
         $event->setPriceMax($priceMax);
         $event->setLink($link);
-        $event->setImage($request->getSchemeAndHttpHost() . '/uploads/' . $fileName);
+        $event->setImage($imageUrl);
         $event->setTypeEvent("local-event");
 
         // Process the category data to support multiple categories
@@ -192,7 +204,8 @@ class LocalEventsController extends AbstractController
         int $id,
         Request $request,
         EntityManagerInterface $entityManager,
-        LocalEventsRepository $repository
+        LocalEventsRepository $repository,
+        S3Client $s3Client
     ): Response {
         $event = $repository->find($id);
         if (!$event) {
@@ -245,17 +258,29 @@ class LocalEventsController extends AbstractController
 
 
         $uploadedFile = $request->files->get('image');
-        if ($uploadedFile) { // Sprawdzamy, czy plik faktycznie został przesłany
-            $uploadsDir = $this->getParameter('upload_dir');
+        if ($uploadedFile) { // Check if the file was actually uploaded
             $fileName = uniqid() . '.' . $uploadedFile->guessExtension();
+            $bucket = 'chwile-plocka'; // Your S3 bucket name
+            $uploadsDir = 'uploads/' . $fileName; // S3 path inside bucket
 
             try {
-                $uploadedFile->move($uploadsDir, $fileName);
-                $event->setImage($request->getSchemeAndHttpHost() . '/uploads/' . $fileName);
+                // Upload file to S3
+                $result = $s3Client->putObject([
+                    'Bucket' => $bucket,
+                    'Key' => $uploadsDir,
+                    'Body' => fopen($uploadedFile->getPathname(), 'rb'),
+                    'ACL' => 'public-read', // Make the file publicly accessible
+                    'ContentType' => $uploadedFile->getMimeType(),
+                ]);
+
+                // Set public S3 URL as image path in entity
+                $event->setImage($result['ObjectURL']);
+
             } catch (\Exception $e) {
-                return $this->json(['error' => 'File upload failed'], Response::HTTP_INTERNAL_SERVER_ERROR);
+                return $this->json(['error' => 'File upload failed: ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
         }
+
 
         $event->setPriceMin($priceMin);
         $event->setPriceMax($priceMax);
