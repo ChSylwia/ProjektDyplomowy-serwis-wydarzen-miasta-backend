@@ -117,6 +117,7 @@ class GoogleAuthenticator extends AbstractAuthenticator
             $googleIntegration->setAccessToken($tokenData['access_token']);
             $googleIntegration->setRefreshToken($tokenData['refresh_token'] ?? null);
 
+            $this->googleIntegrationRepository->save($googleIntegration, true);
 
             return $user;
 
