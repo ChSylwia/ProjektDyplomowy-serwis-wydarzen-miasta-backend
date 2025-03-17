@@ -28,10 +28,13 @@ class EventEmailController extends AbstractController
                 return new JsonResponse((object) ['error' => "Missing field: $field"], Response::HTTP_BAD_REQUEST);
             }
         }
-
+        $user = $this->getUser();
+        if (!$user || !$user->getEmail()) {
+            return $this->json(['error' => 'User email not found.'], Response::HTTP_UNAUTHORIZED);
+        }
         $email = (new Email())
             ->from('hello@demomailtrap.com')
-            ->to('chedkowska0@gmail.com')
+            ->to($user->getEmail())
             ->subject('New Event: ' . $data['title'])
             ->text(
                 "Event: {$data['title']}\n" .

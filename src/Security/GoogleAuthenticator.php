@@ -100,7 +100,7 @@ class GoogleAuthenticator extends AbstractAuthenticator
                 $user->setFirstName($decodedToken['given_name'] ?? 'Google');
                 $user->setLastName($decodedToken['family_name'] ?? 'User');
                 $user->setUsername($decodedToken['name'] ?? 'Google User');
-                $user->setUserType('private');
+                $user->setUserType('google');
                 $user->setTermsAccepted(true);
                 $this->userRepository->save($user, true);
             }
