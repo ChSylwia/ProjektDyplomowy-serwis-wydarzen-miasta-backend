@@ -2,6 +2,7 @@
 
 namespace App\Services\DownloadExternalEvents;
 
+use Aws\S3\S3Client;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use GuzzleHttp\Client;
@@ -27,6 +28,27 @@ class TheatreRepertuarDownloader implements DownloadExternalEventsInterface
      */
     public function execute(InputInterface $input, OutputInterface $output): void
     {
+        $s3 = new S3Client([
+            'version' => 'latest',
+            'region' => getenv('AWS_DEFAULT_REGION'),
+            'credentials' => [
+                'key' => getenv('AWS_ACCESS_KEY_ID'),
+                'secret' => getenv('AWS_SECRET_ACCESS_KEY'),
+            ],
+        ]);
+
+        try {
+            $s3->putObjectAcl([
+                'Bucket' => getenv('AWS_BUCKET'),
+                'Key' => 'Teatr-dramatyczny-plock.png',
+                'ACL' => 'public-read',
+            ]);
+            $output->writeln("S3 ACL updated for Teatr-dramatyczny-plock.png");
+        } catch (\Exception $e) {
+            $output->writeln("<error>Failed to update S3 ACL: " . $e->getMessage() . "</error>");
+        }
+
+
         $month = date('m');
         $year = date('Y');
         $url = sprintf('https://www.teatrplock.pl/pl/repertuar-new/%s/%s', $month, $year);
