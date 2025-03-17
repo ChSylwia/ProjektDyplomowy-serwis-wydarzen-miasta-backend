@@ -91,15 +91,17 @@ class GoogleAuthenticator extends AbstractAuthenticator
 
             $email = $decodedToken['email'];
             $googleId = $decodedToken['sub'];
-
+            $firstName = $decodedToken['given_name'];
+            $lastName = $decodedToken['family_name'];
+            $name = $decodedToken['name'];
             $user = $this->userRepository->findOneBy(['email' => $email]);
             if (!$user) {
                 $user = new User();
                 $user->setEmail($email);
                 $user->setPassword('google_user_placeholder'); // Placeholder password
-                $user->setFirstName($decodedToken['given_name'] ?? 'Google');
-                $user->setLastName($decodedToken['family_name'] ?? 'User');
-                $user->setUsername($decodedToken['name'] ?? 'Google User');
+                $user->setFirstName($firstName);
+                $user->setLastName($lastName);
+                $user->setUsername($name);
                 $user->setUserType('google');
                 $user->setTermsAccepted(true);
                 $this->userRepository->save($user, true);
