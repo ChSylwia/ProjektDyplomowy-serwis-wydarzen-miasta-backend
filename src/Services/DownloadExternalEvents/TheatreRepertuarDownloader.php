@@ -88,7 +88,7 @@ class TheatreRepertuarDownloader implements DownloadExternalEventsInterface
             }
 
             $description = "Teatr dramatyczny w Płocku zaprasza na sztukę. \n Scena: " . $scene;
-            $image = 'https://chwileplocka-backend-72c2516b9445.herokuapp.com/uploads/Teatr-dramatyczny-plock.png';
+            $image = 'https://chwile-plocka.s3.amazonaws.com/Teatr-dramatyczny-plock.png';
             $eventsData[] = [
                 'date' => $date->format('Y-m-d H:i'),
                 'title' => $title,
@@ -107,7 +107,6 @@ class TheatreRepertuarDownloader implements DownloadExternalEventsInterface
         if (!is_dir($publicDir)) {
             mkdir($publicDir, 0777, true);
         }
-        file_put_contents($publicDir . '/theatre_repertuar.json', $json);
 
         foreach ($eventsData as $eventData) {
             $eventEntity = $this->createOrUpdateEventEntity($eventData);

@@ -32,8 +32,8 @@ class CinemaRepertuarDownloader implements DownloadExternalEventsInterface
     {
         $allEventsData = [];
 
-        // Loop for the next 5 days.
-        for ($i = 0; $i < 5; $i++) {
+        // Loop for the next 7 days.
+        for ($i = 0; $i < 7; $i++) {
             // Calculate the date for this iteration, based on the current date.
             $date = clone $this->currentDateTime;
             $date->modify("+{$i} day");
@@ -58,7 +58,6 @@ class CinemaRepertuarDownloader implements DownloadExternalEventsInterface
                     $posterAnchor = $infoTd->filter('div.repertoire-movie-poster a');
                     $movieLink = $posterAnchor->attr('href');
                     if ($movieLink && strpos($movieLink, 'http') !== 0) {
-                        // Ensure that relative links are built properly.
                         $movieLink = rtrim($this->baseUrl, '/') . '/' . ltrim($movieLink, '/');
                     }
                     $img = $posterAnchor->filter('img')->attr('src');

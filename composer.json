@@ -9,6 +9,7 @@
     "ext-iconv": "*",
     "ext-pdo_sqlsrv": "^5.11",
     "ext-sqlsrv": "^5.11",
+    "aws/aws-sdk-php": "^3.342",
     "doctrine/dbal": "*",
     "doctrine/doctrine-bundle": "^2.10",
     "doctrine/doctrine-migrations-bundle": "^3.2",
