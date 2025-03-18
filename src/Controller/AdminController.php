@@ -333,7 +333,7 @@ class AdminController extends AbstractController
         if (isset($data['date'])) {
             $event->setDate(new \DateTime($data['date']));
         }
-        if (isset($data['price'])) {
+        if (isset($data['price']) && $data['price'] !== 'null') {
             $event->setPrice($data['price']);
         }
         if (isset($data['link'])) {
