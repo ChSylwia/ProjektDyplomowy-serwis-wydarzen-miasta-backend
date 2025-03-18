@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use Aws\S3\S3Client;
+
 use App\Entity\User;
 use App\Entity\LocalEvents;
 use App\Entity\Events;
@@ -204,7 +206,19 @@ class AdminController extends AbstractController
             $event->setTypeEvent($data['typeEvent']);
         }
         if (isset($data['category'])) {
-            $event->setCategory($data['category']);
+            $categories = $data['category'] ?? null;
+            if (!$categories || (is_string($categories) && trim($categories) === '')) {
+                $categories = ['inne'];
+            } elseif (!is_array($categories)) {
+                $categories = explode(',', $categories);
+                $categories = array_map('trim', $categories);
+                $categories = array_filter($categories, fn($cat) => $cat !== '');
+                $categories = array_values($categories);
+                if (empty($categories)) {
+                    $categories = ['inne'];
+                }
+            }
+            $event->setCategory($categories);
         }
         if (isset($data['deleted'])) {
             $event->setDeleted(filter_var($data['deleted'], FILTER_VALIDATE_BOOLEAN));
@@ -213,14 +227,33 @@ class AdminController extends AbstractController
         $uploadedFile = $request->files->get('image');
 
         if ($uploadedFile) {
+            $s3Client = new S3Client([
+                'version' => 'latest',
+                'region' => getenv('AWS_DEFAULT_REGION'),
+                'credentials' => [
+                    'key' => getenv('AWS_ACCESS_KEY_ID'),
+                    'secret' => getenv('AWS_SECRET_ACCESS_KEY'),
+                ],
+            ]);
+
             $uploadsDir = $this->getParameter('upload_dir');
             $fileName = uniqid() . '.' . $uploadedFile->guessExtension();
 
+            $bucket = 'chwile-plocka'; // Your S3 bucket name
+            $uploadsDir = 'uploads/' . $fileName; // S3 object key (path)
             try {
-                // Save the image file
-                $uploadedFile->move($uploadsDir, $fileName);
-                // Set the image URL in the event
-                $event->setImage($request->getSchemeAndHttpHost() . '/uploads/' . $fileName);
+                // Upload file to S3
+                $result = $s3Client->putObject([
+                    'Bucket' => $bucket,
+                    'Key' => $uploadsDir,
+                    'Body' => fopen($uploadedFile->getPathname(), 'rb'),
+                    'ContentType' => $uploadedFile->getMimeType(),
+                ]);
+
+                // Set public S3 URL as image path in entity
+                $event->setImage($result['ObjectURL']);
+
+
             } catch (\Exception $e) {
                 return new JsonResponse(['error' => 'File upload failed'], 500);
             }
@@ -310,24 +343,54 @@ class AdminController extends AbstractController
             $event->setTypeEvent($data['typeEvent']);
         }
         if (isset($data['category'])) {
-            $event->setCategory($data['category']);
+            $categories = $data['category'] ?? null;
+            if (!$categories || (is_string($categories) && trim($categories) === '')) {
+                $categories = ['inne'];
+            } elseif (!is_array($categories)) {
+                $categories = explode(',', $categories);
+                $categories = array_map('trim', $categories);
+                $categories = array_filter($categories, fn($cat) => $cat !== '');
+                $categories = array_values($categories);
+                if (empty($categories)) {
+                    $categories = ['inne'];
+                }
+            }
+            $event->setCategory($categories);
         }
         $uploadedFile = $request->files->get('image');
 
         if ($uploadedFile) {
+            $s3Client = new S3Client([
+                'version' => 'latest',
+                'region' => getenv('AWS_DEFAULT_REGION'),
+                'credentials' => [
+                    'key' => getenv('AWS_ACCESS_KEY_ID'),
+                    'secret' => getenv('AWS_SECRET_ACCESS_KEY'),
+                ],
+            ]);
+
             $uploadsDir = $this->getParameter('upload_dir');
             $fileName = uniqid() . '.' . $uploadedFile->guessExtension();
 
+            $bucket = 'chwile-plocka'; // Your S3 bucket name
+            $uploadsDir = 'uploads/' . $fileName; // S3 object key (path)
             try {
-                // Save the image file
-                $uploadedFile->move($uploadsDir, $fileName);
-                // Set the image URL in the event
-                $event->setImage($request->getSchemeAndHttpHost() . '/uploads/' . $fileName);
+                // Upload file to S3
+                $result = $s3Client->putObject([
+                    'Bucket' => $bucket,
+                    'Key' => $uploadsDir,
+                    'Body' => fopen($uploadedFile->getPathname(), 'rb'),
+                    'ContentType' => $uploadedFile->getMimeType(),
+                ]);
+
+                // Set public S3 URL as image path in entity
+                $event->setImage($result['ObjectURL']);
+
+
             } catch (\Exception $e) {
                 return new JsonResponse(['error' => 'File upload failed'], 500);
             }
         }
-
         $em->flush();
 
         return new JsonResponse(['status' => 'Event updated successfully']);
