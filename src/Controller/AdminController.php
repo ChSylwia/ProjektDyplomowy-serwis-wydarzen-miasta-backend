@@ -160,7 +160,7 @@ class AdminController extends AbstractController
                 'priceMax' => $event->getPriceMax(),
                 'link' => $event->getLink(),
                 'typeEvent' => $event->getTypeEvent(),
-                'category' => $event->getCategory(),
+                'category' => is_array($event->getCategory()) ? implode(', ', $event->getCategory()) : $event->getCategory(),
                 'deleted' => $event->getDeleted(),
                 'image' => $event->getImage()
             ];
@@ -306,7 +306,7 @@ class AdminController extends AbstractController
                 'price' => $event->getPrice(),
                 'link' => $event->getLink(),
                 'typeEvent' => $event->getTypeEvent(),
-                'category' => $event->getCategory(),
+                'category' => is_array($event->getCategory()) ? implode(', ', $event->getCategory()) : $event->getCategory(),
             ];
         }
 
