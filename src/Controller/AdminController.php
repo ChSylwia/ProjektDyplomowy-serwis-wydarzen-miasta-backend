@@ -193,10 +193,10 @@ class AdminController extends AbstractController
         if (isset($data['date'])) {
             $event->setDate(new \DateTime($data['date']));
         }
-        if (isset($data['priceMin'])) {
+        if (isset($data['priceMin']) && $data['priceMin'] !== 'null') {
             $event->setPriceMin($data['priceMin']);
         }
-        if (isset($data['priceMax'])) {
+        if (isset($data['priceMax']) && $data['priceMax'] !== 'null') {
             $event->setPriceMax($data['priceMax']);
         }
         if (isset($data['link'])) {
