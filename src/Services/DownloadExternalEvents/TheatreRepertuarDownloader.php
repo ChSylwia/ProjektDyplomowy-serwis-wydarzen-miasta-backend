@@ -41,7 +41,7 @@ class TheatreRepertuarDownloader implements DownloadExternalEventsInterface
             $s3->putObjectAcl([
                 'Bucket' => getenv('AWS_BUCKET'),
                 'Key' => 'Teatr-dramatyczny-plock.png',
-                'ACL' => 'public-read',
+
             ]);
             $output->writeln("S3 ACL updated for Teatr-dramatyczny-plock.png");
         } catch (\Exception $e) {
