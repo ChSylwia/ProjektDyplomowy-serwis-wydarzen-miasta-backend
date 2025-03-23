@@ -80,7 +80,8 @@ class EbiletEventsDownloader implements DownloadExternalEventsInterface
         $url = 'https://www.ebilet.pl/api/TitleListing/Search?currentTab=1&sort=1'
             . '&dateFrom=' . urlencode($startDate)
             . '&dateTo=' . urlencode($endDate)
-            . "&province=mazowieckie&city=P%C5%82ock&top=$top&size=20";
+            . '&province=mazowieckie&city=' . urlencode('Płock')
+            . "&top=$top&size=20";
 
         $request = new \GuzzleHttp\Psr7\Request('GET', $url, $headers);
         $response = $this->client->send($request);
