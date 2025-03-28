@@ -92,9 +92,8 @@ class EbiletEventsDownloader implements DownloadExternalEventsInterface
 
     private function createOrUpdateEventEntity(array $eventData, OutputInterface $output): Events
     {
-        $externalId = $eventData['id'];
         $source = 'ebilet';
-
+        $externalId = md5($eventData['title'] . $eventData['id']);
         // Check if the event already exists in the database
         $event = $this->entityManager
             ->getRepository(Events::class)

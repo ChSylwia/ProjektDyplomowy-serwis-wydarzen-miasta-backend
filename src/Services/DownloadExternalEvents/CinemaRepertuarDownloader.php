@@ -123,7 +123,6 @@ class CinemaRepertuarDownloader implements DownloadExternalEventsInterface
         if (!is_dir($publicDir)) {
             mkdir($publicDir, 0777, true);
         }
-        file_put_contents($publicDir . '/cinema_repertuar.json', $json);
 
         // Persist events into the database.
         foreach ($allEventsData as $eventData) {
