@@ -20,7 +20,7 @@ class EbiletEventsDownloader implements DownloadExternalEventsInterface
     }
     public function execute(InputInterface $input, OutputInterface $output): void
     {
-        $maxRetries = 4;
+        $maxRetries = 7;
         $currentDate = new \DateTime();
         $currentDateString = $currentDate->format('Y-m-d');
 
