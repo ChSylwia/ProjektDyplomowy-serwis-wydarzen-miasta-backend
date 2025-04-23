@@ -29,6 +29,24 @@ xdebug.client_host = 127.0.0.1
 
 and reset server symfony
 
+## for local jwt and oauth
+
+lexik_jwt_authentication:
+secret_key: "%env(resolve:JWT_SECRET_KEY)%"
+public_key: "%env(resolve:JWT_PUBLIC_KEY)%"
+pass_phrase: "%env(JWT_PASSPHRASE)%"
+token_ttl: 20368000
+user_identity_field: email
+--
+knpu_oauth2_client:
+clients:
+google:
+type: google
+client_id: "%env(OAUTH_GOOGLE_CLIENT_ID)%"
+client_secret: "%env(OAUTH_GOOGLE_CLIENT_SECRET)%"
+redirect_route: connect_google_check
+redirect_params: {}
+
 ## for front
 
 npm run dev
