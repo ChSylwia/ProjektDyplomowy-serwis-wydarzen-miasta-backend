@@ -15,6 +15,7 @@ class Kernel extends BaseKernel
 
         // Write JWT keys from ENV contents into temp files
         $this->initializeJwtKeys();
+
     }
 
     private function initializeJwtKeys(): void
@@ -41,5 +42,10 @@ class Kernel extends BaseKernel
         // Set env vars dynamically for Lexik to use
         putenv("JWT_SECRET_KEY=$privateKeyPath");
         putenv("JWT_PUBLIC_KEY=$publicKeyPath");
+        file_put_contents('/tmp/debug-log.txt', "JWT_PRIVATE_KEY contents:\n" . getenv('JWT_PRIVATE_KEY'));
+        file_put_contents('/tmp/debug-log.txt', "\nFile written to: $privateKeyPath", FILE_APPEND);
+        file_put_contents('/tmp/jwt-debug.txt', "ENV private key length: " . strlen($privateKeyContent) . "\n");
+        file_put_contents('/tmp/jwt-debug.txt', "Wrote file: $privateKeyPath exists? " . (file_exists($privateKeyPath) ? 'yes' : 'no') . "\n", FILE_APPEND);
+
     }
 }
