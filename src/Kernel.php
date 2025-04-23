@@ -2,50 +2,18 @@
 
 namespace App;
 
+use App\DependencyInjection\Compiler\JwtPathCompilerPass;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 
 class Kernel extends BaseKernel
 {
     use MicroKernelTrait;
+    use MicroKernelTrait;
 
-    public function boot(): void
+    protected function build(ContainerBuilder $container): void
     {
-        parent::boot();
-
-        // Write JWT keys from ENV contents into temp files
-        $this->initializeJwtKeys();
-
-    }
-
-    private function initializeJwtKeys(): void
-    {
-        $privateKeyContent = getenv('JWT_PRIVATE_KEY');
-        $publicKeyContent = getenv('JWT_PUBLIC_KEY');
-
-        if (!$privateKeyContent || !$publicKeyContent) {
-            throw new \RuntimeException('JWT_PRIVATE_KEY and JWT_PUBLIC_KEY env variables must be set.');
-        }
-
-        $privateKeyPath = sys_get_temp_dir() . '/jwt-private.pem';
-        $publicKeyPath = sys_get_temp_dir() . '/jwt-public.pem';
-
-        // Write only if the files don't exist (optional)
-        if (!file_exists($privateKeyPath)) {
-            file_put_contents($privateKeyPath, $privateKeyContent);
-        }
-
-        if (!file_exists($publicKeyPath)) {
-            file_put_contents($publicKeyPath, $publicKeyContent);
-        }
-
-        // Set env vars dynamically for Lexik to use
-        putenv("JWT_SECRET_KEY=$privateKeyPath");
-        putenv("JWT_PUBLIC_KEY=$publicKeyPath");
-        file_put_contents('/tmp/debug-log.txt', "JWT_PRIVATE_KEY contents:\n" . getenv('JWT_PRIVATE_KEY'));
-        file_put_contents('/tmp/debug-log.txt', "\nFile written to: $privateKeyPath", FILE_APPEND);
-        file_put_contents('/tmp/jwt-debug.txt', "ENV private key length: " . strlen($privateKeyContent) . "\n");
-        file_put_contents('/tmp/jwt-debug.txt', "Wrote file: $privateKeyPath exists? " . (file_exists($privateKeyPath) ? 'yes' : 'no') . "\n", FILE_APPEND);
-
+        $container->addCompilerPass(new JwtPathCompilerPass());
     }
 }
