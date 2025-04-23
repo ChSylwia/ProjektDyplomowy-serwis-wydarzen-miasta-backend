@@ -1,2 +1,2 @@
-release: bin/heroku-release.sh
+release: bin/post-install.sh
 web: heroku-php-apache2 -C apache.conf
