@@ -1,6 +1,6 @@
 lexik_jwt_authentication:
-  secret_key: "%env(resolve:JWT_SECRET_KEY)%" # required for token creation
-  public_key: "%env(resolve:JWT_PUBLIC_KEY)%" # required for token verification
-  pass_phrase: "%env(JWT_PASSPHRASE)%" # required for token creation
+  secret_key: "%kernel.project_dir%/config/jwt/private.pem"
+  public_key: "%kernel.project_dir%/config/jwt/public.pem"
+  pass_phrase: "%env(JWT_PASSPHRASE)%"
   token_ttl: 20368000
   user_identity_field: email
