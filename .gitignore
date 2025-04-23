@@ -31,3 +31,4 @@
 .profile.d/
 vendor/
 /config/oauth/*.pem
+readme-private.md
