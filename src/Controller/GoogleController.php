@@ -21,7 +21,7 @@ class GoogleController extends AbstractController
     {
         // Retrieve credentials from the environment
         $clientId = $_ENV['OAUTH_GOOGLE_CLIENT_ID'];
-        $redirectUri = 'https://chwileplocka-backend-72c2516b9445.herokuapp.com/connect/google/check';
+        $redirectUri = 'https://projektdyplomowy-serwis-wydarzen-miasta.onrender.com/connect/google/check';
         $scopes = 'openid profile https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/userinfo.email';
 
         $authUrl = sprintf(
@@ -53,7 +53,7 @@ class GoogleController extends AbstractController
 
         $clientId = $_ENV['OAUTH_GOOGLE_CLIENT_ID'];
         $clientSecret = $_ENV['OAUTH_GOOGLE_CLIENT_SECRET'];
-        $redirectUri = 'https://chwileplocka-backend-72c2516b9445.herokuapp.com/connect/google/check';
+        $redirectUri = 'https://projektdyplomowy-serwis-wydarzen-miasta.onrender.com/connect/google/check';
 
         try {
             // Exchange authorization code for tokens

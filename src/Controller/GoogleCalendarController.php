@@ -43,7 +43,7 @@ class GoogleCalendarController extends AbstractController
         $client = new Google_Client();
         $client->setClientId($_ENV['OAUTH_GOOGLE_CLIENT_ID']);
         $client->setClientSecret($_ENV['OAUTH_GOOGLE_CLIENT_SECRET']);
-        $client->setRedirectUri('https://chwileplocka-backend-72c2516b9445.herokuapp.com/connect/google/check');
+        $client->setRedirectUri('https://projektdyplomowy-serwis-wydarzen-miasta.onrender.com/connect/google/check');
         $client->addScope(Google_Service_Calendar::CALENDAR);
         $client->setAccessToken($googleIntegration->getAccessToken());
 
