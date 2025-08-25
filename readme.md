@@ -1,5 +1,5 @@
 ## Serwis z wydarzeniami miasta backend
-Backend projektu napisany w PHP (Symfony), służący do zapisu i zarządzania wydarzeniami miasta Płock. Dane są pobierane zarówno z zewnętrznych API, jak i przez web scraping. Backend udostępnia REST API, z którego korzysta frontend w React.
+Backend projektu napisany w PHP (Symfony), służący do zapisu i zarządzania wydarzeniami miasta Płock. Dane są pobierane zarówno z zewnętrznych API, jak i przez web scraping. Backend udostępnia REST API, z którego korzysta frontend w React. Link do frontendu: https://github.com/ChSylwia/ProjektDyplomowy-serwis-wydarzen-miasta-front
 
 ## Technologie i narzędzia
 - **Symfony PHP**
